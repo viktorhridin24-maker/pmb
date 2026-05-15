@@ -2,77 +2,80 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Конструктор — Поверь мне брат</title>
+    <title>Создание страницы — ПМБ</title>
     <link rel="icon" href="pmbfanicon.png" type="image/png">
     <style>
-        body { font-family: "Times New Roman", serif; background: #f0f2f5; padding: 40px; }
-        .editor-container { max-width: 800px; background: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: auto; }
-        input, textarea { width: 100%; margin-bottom: 15px; padding: 10px; border: 1px solid #a2a9b1; font-family: inherit; }
-        button { background: #36c; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
-        h2 { margin-top: 0; }
+        body { font-family: "Times New Roman", serif; background: #f0f0f0; padding: 20px; }
+        .editor-container { background: white; max-width: 800px; margin: auto; padding: 30px; border: 1px solid #ccc; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input, textarea { width: 100%; border: 1px solid #a2a9b1; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        textarea { min-height: 300px; font-family: monospace; }
+        .toolbar { background: #eee; padding: 10px; margin-bottom: 10px; }
+        button { background: #3366cc; color: white; border: none; padding: 10px 20px; cursor: pointer; }
+        button:hover { background: #4477dd; }
     </style>
 </head>
 <body>
 
 <div class="editor-container">
-    <h2 id="formTitle">Создать новую страницу</h2>
-    <input type="text" id="artTitle" placeholder="Заголовок статьи (например: Троллфейс)">
-    <input type="text" id="artImage" placeholder="Ссылка на URL картинки (необязательно)">
-    <textarea id="artText" rows="10" placeholder="Текст статьи..."></textarea>
-    <button id="saveBtn">Опубликовать (Источник: поверь мне брат)</button>
-    <p id="status"></p>
+    <h2>Конструктор статьи</h2>
+    <input type="text" id="art-id" placeholder="ID статьи (латиницей, например: doge_meme)">
+    <input type="text" id="art-title" placeholder="Заголовок статьи">
+    
+    <div class="toolbar">
+        <b>Инструменты:</b> 
+        <button onclick="addTag('b')">Жирный</button>
+        <button onclick="addTag('i')">Курсив</button>
+        <button onclick="addTemplate()">Шаблон карточки</button>
+    </div>
+
+    <textarea id="art-content" placeholder="Пиши сюда правду..."></textarea>
+    <button id="save-btn">Опубликовать</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
         authDomain: "pover-mne-bratishka.firebaseapp.com",
         projectId: "pover-mne-bratishka",
-        storageBucket: "pover-mne-bratishka.firebasestorage.app",
-        messagingSenderId: "633219407843",
         appId: "1:633219407843:web:96b57b4d636091b3598ad6"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get('edit');
+    document.getElementById('save-btn').addEventListener('click', async () => {
+        const id = document.getElementById('art-id').value;
+        const title = document.getElementById('art-title').value;
+        const content = document.getElementById('art-content').value;
 
-    if (editId) {
-        document.getElementById('formTitle').innerText = "Редактирование статьи";
-        // Предзагрузка данных для редактирования
-        const docRef = doc(db, "articles", editId);
-        getDoc(docRef).then(snap => {
-            if(snap.exists()){
-                const d = snap.data();
-                document.getElementById('artTitle').value = d.title;
-                document.getElementById('artImage').value = d.imageUrl;
-                document.getElementById('artText').value = d.text;
-            }
+        if(!id || !title) return alert("Брат, заполни поля!");
+
+        await setDoc(doc(db, "articles", id), {
+            title: title,
+            content: content.replace(/\n/g, '<br>')
         });
+
+        alert("Опубликовано!");
+        window.location.href = `index.html?id=${id}`;
+    });
+</script>
+
+<script>
+    function addTag(tag) {
+        const area = document.getElementById('art-content');
+        area.value += `<${tag}>текст</${tag}>`;
     }
-
-    document.getElementById('saveBtn').onclick = async () => {
-        const title = document.getElementById('artTitle').value;
-        const text = document.getElementById('artText').value;
-        const imageUrl = document.getElementById('artImage').value;
-
-        try {
-            if (editId) {
-                await updateDoc(doc(db, "articles", editId), { title, text, imageUrl });
-                window.location.href = `index.html?id=${editId}`;
-            } else {
-                const docRef = await addDoc(collection(db, "articles"), { title, text, imageUrl });
-                window.location.href = `index.html?id=${docRef.id}`;
-            }
-        } catch (e) {
-            document.getElementById('status').innerText = "Ошибка: " + e.message;
-        }
-    };
+    function addTemplate() {
+        const area = document.getElementById('art-content');
+        area.value += `<div style="float:right; border:1px solid #ccc; padding:10px; margin:10px; width:200px; background:#f9f9f9;">
+            <b>Карточка мема</b><br>
+            <img src="ССЫЛКА" style="width:100%"><br>
+            Происхождение: поверь мне брат
+        </div>`;
+    }
 </script>
 </body>
 </html>
