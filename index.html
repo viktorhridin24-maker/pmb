@@ -4,56 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поверь мне брат — Свободная энциклопедия</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: sans-serif; background: #f6f6f6; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border: 1px solid #a2a9b1; }
+        h1 { border-bottom: 1px solid #a2a9b1; padding-bottom: 5px; }
+        .wiki-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn { background: #3366cc; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 2px; }
+        .btn:hover { background: #447ff5; }
+        .article { margin-top: 30px; padding: 15px; border-left: 5px solid #3366cc; background: #f8f9fa; }
+        .source { color: #72777d; font-style: italic; font-size: 0.9em; margin-top: 10px; }
+    </style>
 </head>
 <body>
-    <div class="sidebar">
-        <img src="Gemini_Generated_Image_5ofgfb5ofgfb5ofg-removebg-preview.jpg" alt="Logo" class="logo">
-        <nav>
-            <ul>
-                <li><a href="#">Заглавная страница</a></li>
-                <li><a href="#">Рубрикация</a></li>
-                <li><a href="#">Случайная статья</a></li>
-            </ul>
-        </nav>
+
+<div class="container">
+    <h1>Поверь мне брат</h1>
+    <p>Это свободная энциклопедия, где пруфы не нужны.</p>
+
+    <div style="background: #eee; padding: 15px; margin-bottom: 20px;">
+        <h3>Создать новую истину</h3>
+        <input type="text" id="title" class="wiki-input" placeholder="Заголовок (например: Почему небо синее?)">
+        <textarea id="content" class="wiki-input" rows="4" placeholder="Текст статьи..."></textarea>
+        <button class="btn" id="saveBtn">Опубликовать (Мамой клянусь)</button>
     </div>
 
-    <main class="content">
-        <header>
-            <h1 id="firstHeading">Истина (понятие)</h1>
-            <div class="tabs">
-                <span class="active">Статья</span>
-                <span>Обсуждение</span>
-            </div>
-        </header>
+    <div id="articlesList">
+        <p>Загрузка легендарных фактов...</p>
+    </div>
+</div>
 
-        <div class="article-body">
-            <p class="tagline">Материал из Поверьмнебратии — свободной энциклопедии</p>
-            
-            <p><strong>Истина</strong> — это то, что я тебе сейчас говорю. Любые попытки оспорить данное утверждение ведут к потере доверия между братьями.</p>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-            <div class="info-box">
-                <table class="infobox-table">
-                    <tr><th colspan="2">Характеристики Истины</th></tr>
-                    <tr><td>Процент правды</td><td>146%</td></tr>
-                    <tr><td>Уровень доверия</td><td>Братский</td></tr>
-                </table>
-            </div>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
+    authDomain: "pover-mne-bratishka.firebaseapp.com",
+    projectId: "pover-mne-bratishka",
+    storageBucket: "pover-mne-bratishka.firebasestorage.app",
+    messagingSenderId: "633219407843",
+    appId: "1:633219407843:web:96b57b4d636091b3598ad6"
+  };
 
-            <h2>История появления</h2>
-            <p>Первые упоминания о "Поверь мне брат" появились сразу после того, как кто-то попросил пруфы в интернете. Пруфов не было, но было честное слово, которое ценится дороже золота.</p>
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const articlesCol = collection(db, 'articles');
 
-            <div class="citation-needed">
-                Истина не требует доказательств, если она звучит убедительно<sup><a href="#references">[1]</a></sup>.
-            </div>
-        </div>
+  // Функция для отрисовки статей
+  async function loadArticles() {
+    const q = query(articlesCol, orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+    const listDiv = document.getElementById('articlesList');
+    listDiv.innerHTML = '';
 
-        <footer id="references">
-            <h2>Источники</h2>
-            <ol>
-                <li>↑ <b>Поверь мне, брат.</b> Личный разговор, 2026.</li>
-            </ol>
-        </footer>
-    </main>
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const div = document.createElement('div');
+      div.className = 'article';
+      div.innerHTML = `
+        <h2>${data.title}</h2>
+        <p>${data.content}</p>
+        <div class="source">Источник: поверь мне брат</div>
+      `;
+      listDiv.appendChild(div);
+    });
+  }
+
+  // Сохранение новой статьи
+  document.getElementById('saveBtn').onclick = async () => {
+    const title = document.getElementById('title').value;
+    const content = document.getElementById('content').value;
+
+    if(title && content) {
+      await addDoc(articlesCol, {
+        title: title,
+        content: content,
+        createdAt: new Date()
+      });
+      document.getElementById('title').value = '';
+      document.getElementById('content').value = '';
+      loadArticles(); // Обновляем список
+    } else {
+      alert("Заполни поля, ну ты чего!");
+    }
+  };
+
+  // Загружаем при старте
+  loadArticles();
+</script>
+
 </body>
 </html>
