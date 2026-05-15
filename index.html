@@ -12,140 +12,77 @@
             margin: 0;
             display: flex;
         }
-
-        /* Боковая панель */
-        aside {
+        /* Боковая панель в стиле Вики */
+        side-bar {
             width: 160px;
             padding: 20px;
             background: #f6f6f6;
-            border-right: 1px solid #a7d7f9;
-            height: 100vh;
-            position: sticky;
-            top: 0;
         }
-
         .logo {
-            width: 100%;
+            width: 120px;
             margin-bottom: 20px;
         }
-
-        /* Основной контент */
+        /* Контент */
         main {
             flex-grow: 1;
             background: white;
-            padding: 20px 40px;
+            padding: 40px;
             border-left: 1px solid #a7d7f9;
+            min-height: 100vh;
         }
-
-        header {
-            border-bottom: 1px solid #a2a9b1;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         h1 {
-            font-size: 1.8em;
-            margin: 0;
+            border-bottom: 1px solid #a2a9b1;
+            font-size: 2em;
+            margin-bottom: 10px;
         }
-
-        .auth-status {
-            font-size: 0.8em;
-        }
-
-        .article-content {
-            line-height: 1.6;
-            font-size: 1.1em;
-        }
-
-        .source-box {
+        .auth-notice {
             background: #f8f9fa;
             border: 1px solid #eaecf0;
             padding: 10px;
-            margin-top: 40px;
-            font-style: italic;
+            margin-bottom: 20px;
+            font-size: 0.9em;
         }
-
-        /* Форма создания/редактирования */
-        #editor-section {
-            display: none;
-            margin-top: 30px;
-            border-top: 2px solid #3366cc;
-            padding-top: 20px;
-        }
-
-        input, textarea {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 8px;
-            border: 1px solid #a2a9b1;
-            font-family: "Times New Roman", serif;
-        }
-
-        button {
-            background: #3366cc;
+        .btn {
+            background: #36c;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 15px;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
         }
-
-        button:hover {
-            background: #4477dd;
-        }
-
-        .hidden { display: none; }
+        #article-content { line-height: 1.6; }
     </style>
 </head>
 <body>
 
-<aside>
-    <img src="pmb.jpg" alt="Logo" class="logo">
-    <nav>
-        <p><b>Навигация</b></p>
-        <ul style="list-style: none; padding: 0; font-size: 0.9em;">
-            <li><a href="#">Заглавная</a></li>
-            <li><a href="#">Случайная статья</a></li>
-            <li><a href="https://t.me/yourlink">Связаться с братом</a></li>
-        </ul>
-    </nav>
-</aside>
+<side-bar>
+    <img src="pmb.png" alt="Лого" class="logo">
+    <div style="font-size: 0.8em;">
+        <p><a href="index.html">Заглавная</a></p>
+        <p><a href="create.html" id="edit-link" style="display:none;">Создать статью</a></p>
+    </div>
+</side-bar>
 
 <main>
-    <header>
-        <h1 id="article-title">Загрузка истины...</h1>
-        <div class="auth-status" id="auth-info">
-            Вы вошли как: <b>Гость</b> | <a href="#" onclick="toggleLogin()">Эмулировать Вход</a>
-        </div>
-    </header>
-
-    <div id="display-section">
-        <div class="article-content" id="article-body">
-            Выберите статью или создайте новую, если вы ровный пацан.
-        </div>
-        <div class="source-box">
-            <b>Источник:</b> Поверь мне, брат.
-        </div>
+    <div id="auth-status" class="auth-notice">
+        Вы читаете как гость. <button onclick="login()">Войти (имитация)</button>
+    </div>
+    
+    <h1 id="title">Загрузка...</h1>
+    <div id="article-content">
+        Выберите статью или подождите, пока брат подтянет инфу...
     </div>
 
-    <div id="editor-section">
-        <h3>Добавить новую правду в мир</h3>
-        <input type="text" id="new-title" placeholder="Заголовок статьи">
-        <textarea id="new-content" rows="10" placeholder="Текст статьи..."></textarea>
-        <button onclick="saveArticle()">Опубликовать (Брат отвечает)</button>
-    </div>
-
-    <hr style="margin-top: 50px;">
-    <div id="articles-list">
-        <h3>Список существующих истин:</h3>
-        <ul id="list-container"></ul>
+    <div id="edit-section" style="display:none; margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
+        <a href="#" id="actual-edit-button" class="btn">Править статью</a>
     </div>
 </main>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
@@ -159,68 +96,43 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Состояние авторизации (для примера переключаем вручную)
-    window.isLoggedIn = false;
-
-    // Функция переключения входа (костыль для теста без Auth)
-    window.toggleLogin = () => {
-        window.isLoggedIn = !window.isLoggedIn;
-        document.getElementById('auth-info').innerHTML = window.isLoggedIn ? 
-            "Вы вошли как: <b>Братишка</b> | <a href='#' onclick='toggleLogin()'>Выйти</a>" : 
-            "Вы вошли как: <b>Гость</b> | <a href='#' onclick='toggleLogin()'>Эмулировать Вход</a>";
-        
-        document.getElementById('editor-section').style.display = window.isLoggedIn ? 'block' : 'none';
-    };
-
-    // Загрузка списка статей
-    async function loadArticles() {
-        const container = document.getElementById('list-container');
-        container.innerHTML = "Загрузка...";
-        
-        const q = query(collection(db, "articles"));
-        const querySnapshot = await getDocs(q);
-        
-        container.innerHTML = "";
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            let li = document.createElement('li');
-            li.innerHTML = `<a href="#" style="color: #36b; text-decoration: none;">${data.title}</a>`;
-            li.onclick = () => {
-                document.getElementById('article-title').innerText = data.title;
-                document.getElementById('article-body').innerText = data.content;
-            };
-            container.appendChild(li);
-        });
+    // Проверка "авторизации" (пока на локалсторадже для теста)
+    const isAuth = localStorage.getItem('isAuth') === 'true';
+    if(isAuth) {
+        document.getElementById('auth-status').innerText = "Вы вошли как Брат (Редактор)";
+        document.getElementById('edit-link').style.display = 'block';
+        document.getElementById('edit-section').style.display = 'block';
     }
 
-    // Сохранение статьи
-    window.saveArticle = async () => {
-        if (!window.isLoggedIn) {
-            alert("Ты кто такой? Зайди под аккаунтом, брат.");
-            return;
-        }
+    // Получаем ID статьи из URL
+    const params = new URLSearchParams(window.location.search);
+    const articleId = params.get('id') || 'main_page'; // по дефолту главная
 
-        const title = document.getElementById('new-title').value;
-        const content = document.getElementById('new-content').value;
+    async function loadArticle() {
+        const docRef = doc(db, "articles", articleId);
+        const docSnap = await getDoc(docRef);
 
-        if (title && content) {
-            try {
-                await addDoc(collection(db, "articles"), {
-                    title: title,
-                    content: content,
-                    createdAt: new Date()
-                });
-                alert("Истина сохранена!");
-                location.reload();
-            } catch (e) {
-                console.error("Ошибка: ", e);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('title').innerText = data.title;
+            document.getElementById('article-content').innerHTML = data.content;
+            document.title = data.title + " — Поверь мне брат";
+            
+            if(isAuth) {
+                document.getElementById('actual-edit-button').href = `create.html?edit=${articleId}`;
             }
+        } else {
+            document.getElementById('title').innerText = "Статья не найдена";
+            document.getElementById('article-content').innerText = "Походу, брат еще не написал об этом. Ты можешь стать первым!";
         }
-    };
+    }
 
-    // Инициализация
-    loadArticles();
+    window.login = () => {
+        localStorage.setItem('isAuth', 'true');
+        location.reload();
+    }
+
+    loadArticle();
 </script>
-
 </body>
 </html>
