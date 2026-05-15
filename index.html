@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поверь мне брат — Свободная энциклопедия</title>
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" href="pmbfanicon.png" type="image/png">
     <style>
         body {
             font-family: "Times New Roman", Times, serif;
@@ -13,102 +13,115 @@
             display: flex;
         }
 
-        /* Боковая панель (Sidebar) */
-        #sidebar {
+        /* Боковая панель */
+        aside {
             width: 160px;
-            padding: 15px;
-            background-color: #f6f6f6;
-            border-right: 1px solid #a7d7f9;
+            padding: 20px 10px;
+            font-size: 0.8em;
+        }
+        .logo {
+            width: 140px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        /* Основной контент */
+        main {
+            flex-grow: 1;
+            background-color: white;
+            padding: 20px 40px;
+            border-left: 1px solid #a7d7f9;
             min-height: 100vh;
         }
 
-        #sidebar img {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        #sidebar ul {
-            list-style: none;
-            padding: 0;
-            font-size: 0.9em;
-        }
-
-        #sidebar li {
-            margin-bottom: 10px;
-            color: #0645ad;
-            cursor: pointer;
-        }
-
-        /* Контентная часть */
-        #content {
-            flex-grow: 1;
-            background-color: #ffffff;
-            padding: 20px 40px;
-            border-left: 1px solid #a7d7f9;
-            margin-left: -1px;
-        }
-
         h1 {
+            font-family: Georgia, serif;
             border-bottom: 1px solid #a2a9b1;
             font-weight: normal;
-            font-size: 1.8em;
-            margin-top: 0;
+            font-size: 2em;
         }
 
-        .wiki-info {
-            font-size: 0.8em;
-            color: #54595d;
-            margin-bottom: 20px;
+        .auth-panel {
+            text-align: right;
+            font-size: 0.9em;
+            margin-bottom: 10px;
         }
 
-        /* Форма добавления */
-        .editor {
+        .content-box {
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+
+        .source {
+            margin-top: 40px;
+            padding: 10px;
             background: #f8f9fa;
-            border: 1px solid #a2a9b1;
-            padding: 15px;
-            margin-bottom: 30px;
+            border: 1px solid #eaecf0;
+            font-style: italic;
         }
 
+        /* Формы */
+        .editor-zone {
+            display: none; /* Скрыто для гостей */
+            margin-top: 20px;
+            border-top: 2px dashed #ccc;
+            padding-top: 20px;
+        }
         input, textarea {
             width: 100%;
             margin-bottom: 10px;
+            font-family: "Times New Roman";
             padding: 8px;
-            font-family: "Times New Roman", serif;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
         }
-
         button {
-            background-color: #3366cc;
-            color: white;
-            border: none;
-            padding: 8px 16px;
             cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #4477dd;
-        }
-
-        .article-card {
-            border-bottom: 1px solid #eaecf0;
-            padding: 15px 0;
-        }
-
-        .article-card h2 {
-            color: #0645ad;
-            margin: 0;
-        }
-
-        .source-tag {
-            font-style: italic;
-            color: #72777d;
-            font-size: 0.9em;
-            margin-top: 5px;
+            padding: 5px 15px;
         }
     </style>
 </head>
 <body>
 
-    <div id="sidebar">
-        <img src="pmb.jpg
+    <aside>
+        <img src="pmb.jpg" alt="Logo" class="logo">
+        <nav>
+            <p><b>Навигация</b></p>
+            <ul style="list-style: none; padding: 0;">
+                <li><a href="#">Заглавная</a></li>
+                <li><a href="#">Случайная статья</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <div class="auth-panel">
+            <span id="user-status">Вы читаете как гость.</span>
+            <button id="login-btn">Войти (как брат)</button>
+        </div>
+
+        <h1 id="article-title">Загрузка...</h1>
+        
+        <div id="view-mode">
+            <div id="article-content" class="content-box">Выберите статью или создайте новую.</div>
+            <div class="source">Источник: <b>Поверь мне, брат</b></div>
+        </div>
+
+        <div id="edit-mode" class="editor-zone">
+            <h3>Редактировать статью</h3>
+            <input type="text" id="edit-title" placeholder="Название статьи">
+            <textarea id="edit-text" rows="10" placeholder="Пиши правду здесь..."></textarea>
+            <button id="save-btn">Опубликовать</button>
+        </div>
+    </main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
+    authDomain: "pover-mne-bratishka.firebaseapp.com",
+    projectId: "pover-mne-bratishka",
+    storageBucket: "pover-mne-bratishka.firebasestorage.app",
+    messagingSenderId: "633219407843",
+    appId: "1:633219407843:web:96b57b4d636091b3598ad6",
+    measurementId:
