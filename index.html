@@ -5,37 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поверь мне брат — Свободная энциклопедия</title>
     <style>
-        body { font-family: sans-serif; background: #f6f6f6; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border: 1px solid #a2a9b1; }
-        h1 { border-bottom: 1px solid #a2a9b1; padding-bottom: 5px; }
-        .wiki-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; box-sizing: border-box; }
-        .btn { background: #3366cc; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 2px; }
-        .btn:hover { background: #447ff5; }
-        .article { margin-top: 30px; padding: 15px; border-left: 5px solid #3366cc; background: #f8f9fa; }
-        .source { color: #72777d; font-style: italic; font-size: 0.9em; margin-top: 10px; }
+        body { font-family: sans-serif; background: #f6f6f6; margin: 0; display: flex; }
+        
+        /* Боковая панель */
+        aside { width: 160px; padding: 20px; font-size: 13px; border-right: 1px solid #a7d7f9; }
+        aside img { width: 100%; margin-bottom: 20px; }
+        
+        /* Контент */
+        main { flex-grow: 1; padding: 20px 40px; background: white; min-height: 100vh; }
+        h1 { font-family: 'Linux Libertine', Georgia, serif; border-bottom: 1px solid #a2a9b1; padding-bottom: 5px; }
+        
+        .search-box { margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #a2a9b1; box-sizing: border-box; }
+        button { background: #3366cc; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 2px; }
+        button:hover { background: #4477dd; }
+
+        #article-content { line-height: 1.6; }
+        .source-footer { margin-top: 40px; font-style: italic; color: #54595d; border-top: 1px solid #a2a9b1; padding-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Поверь мне брат</h1>
-    <p>Это свободная энциклопедия, где пруфы не нужны.</p>
+<aside>
+    <img src="https://i.ibb.co/hR0W4hS/Gemini-Generated-Image-5ofgfb5ofgfb5ofg-removebg-preview.png" alt="Logo">
+    <p><a href="#" onclick="location.reload()">Заглавная</a></p>
+    <p>Случайная статья</p>
+    <hr>
+    <p><b>Источник:</b><br>Поверь мне брат</p>
+</aside>
 
-    <div style="background: #eee; padding: 15px; margin-bottom: 20px;">
-        <h3>Создать новую истину</h3>
-        <input type="text" id="title" class="wiki-input" placeholder="Заголовок (например: Почему небо синее?)">
-        <textarea id="content" class="wiki-input" rows="4" placeholder="Текст статьи..."></textarea>
-        <button class="btn" id="saveBtn">Опубликовать (Мамой клянусь)</button>
+<main>
+    <div class="search-box">
+        <input type="text" id="search-input" placeholder="Поиск статьи (например: Мамонты)">
+        <button id="search-btn">Найти</button>
+        <button id="create-mode-btn" style="background:#444">Написать статью</button>
     </div>
 
-    <div id="articlesList">
-        <p>Загрузка легендарных фактов...</p>
+    <div id="view-section">
+        <h1 id="title-display">Добро пожаловать в Поверь мне брат</h1>
+        <div id="article-content">
+            Здесь вы найдете только самую "проверенную" информацию. Просто введите название в поиске или создайте новую статью.
+        </div>
+        <div class="source-footer" id="footer-source" style="display:none">
+            Источник: <b>Поверь мне брат.</b>
+        </div>
     </div>
-</div>
+
+    <div id="edit-section" style="display:none">
+        <h1 id="edit-title-h">Создать новую статью</h1>
+        <input type="text" id="new-title" placeholder="Название статьи">
+        <textarea id="new-content" rows="10" placeholder="Текст статьи..."></textarea>
+        <button id="save-btn">Опубликовать (чесслово)</button>
+    </div>
+</main>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
@@ -48,49 +74,48 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const articlesCol = collection(db, 'articles');
+  const articlesRef = collection(db, "articles");
 
-  // Функция для отрисовки статей
-  async function loadArticles() {
-    const q = query(articlesCol, orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    const listDiv = document.getElementById('articlesList');
-    listDiv.innerHTML = '';
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const div = document.createElement('div');
-      div.className = 'article';
-      div.innerHTML = `
-        <h2>${data.title}</h2>
-        <p>${data.content}</p>
-        <div class="source">Источник: поверь мне брат</div>
-      `;
-      listDiv.appendChild(div);
-    });
-  }
-
-  // Сохранение новой статьи
-  document.getElementById('saveBtn').onclick = async () => {
-    const title = document.getElementById('title').value;
-    const content = document.getElementById('content').value;
-
-    if(title && content) {
-      await addDoc(articlesCol, {
-        title: title,
-        content: content,
-        createdAt: new Date()
-      });
-      document.getElementById('title').value = '';
-      document.getElementById('content').value = '';
-      loadArticles(); // Обновляем список
-    } else {
-      alert("Заполни поля, ну ты чего!");
-    }
+  // Переключение режимов
+  document.getElementById('create-mode-btn').onclick = () => {
+      document.getElementById('view-section').style.display = 'none';
+      document.getElementById('edit-section').style.display = 'block';
   };
 
-  // Загружаем при старте
-  loadArticles();
+  // Сохранение статьи
+  document.getElementById('save-btn').onclick = async () => {
+      const title = document.getElementById('new-title').value;
+      const content = document.getElementById('new-content').value;
+
+      if(title && content) {
+          await addDoc(articlesRef, { 
+              title: title.toLowerCase(), 
+              displayTitle: title,
+              content: content,
+              date: new Date() 
+          });
+          alert("Брат, сохранил! Теперь все поверят.");
+          location.reload();
+      }
+  };
+
+  // Поиск статьи
+  document.getElementById('search-btn').onclick = async () => {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const q = query(articlesRef, where("title", "==", searchTerm));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+          const data = querySnapshot.docs[0].data();
+          document.getElementById('title-display').innerText = data.displayTitle;
+          document.getElementById('article-content').innerText = data.content;
+          document.getElementById('footer-source').style.display = 'block';
+          document.getElementById('view-section').style.display = 'block';
+          document.getElementById('edit-section').style.display = 'none';
+      } else {
+          alert("Брат, такой статьи нет. Но ты можешь её создать!");
+      }
+  };
 </script>
 
 </body>
