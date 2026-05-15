@@ -2,88 +2,84 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Создание статьи — Поверь мне брат</title>
+    <title>Создание страницы — Поверь мне брат</title>
     <link rel="icon" href="pmbfanicon.png" type="image/png">
     <style>
-        body { font-family: "Times New Roman", serif; padding: 40px; background: #f6f6f6; }
-        .editor-container { max-width: 800px; margin: auto; background: white; padding: 20px; border: 1px solid #a2a9b1; }
-        input, textarea { width: 100%; margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; box-sizing: border-box; }
-        textarea { height: 300px; font-family: "Times New Roman", serif; font-size: 1.1em; }
-        button { background: #3366cc; color: white; border: none; padding: 10px 20px; cursor: pointer; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        body { font-family: "Times New Roman", serif; background: #f6f6f6; padding: 50px; }
+        .editor-container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border: 1px solid #a2a9b1; }
+        input, textarea, select { width: 100%; margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; font-family: inherit; }
+        button { background: #3366cc; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 16px; }
+        .preview-box { border: 1px dashed #ccc; padding: 10px; background: #fffbe6; font-size: 0.9em; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div class="editor-container">
-    <h1>Редактор статей</h1>
-    <label>Заголовок статьи</label>
-    <input type="text" id="title" placeholder="Например: Почему трава зеленая (правда)">
+    <h2>Редактор «Поверь мне брат»</h2>
+    <p>Выбери шаблон и заполни данные. Пруфы не нужны.</p>
     
-    <label>Ссылка на картинку (опционально)</label>
-    <input type="text" id="image" placeholder="URL изображения">
-    
-    <label>Текст статьи</label>
-    <textarea id="content" placeholder="Пиши как есть, мы поверим..."></textarea>
-    
-    <button id="saveBtn">Опубликовать (брат клянусь)</button>
+    <label>Название статьи:</label>
+    <input type="text" id="title" placeholder="Напр: Почему небо синее">
+
+    <label>Шаблон оформления:</label>
+    <select id="template" onchange="applyTemplate()">
+        <option value="standard">Обычный текст</option>
+        <option value="biography">Биография мема</option>
+        <option value="scientific">«Научный» факт</option>
+    </select>
+
+    <label>Контент (поддерживает HTML):</label>
+    <textarea id="content" rows="10" placeholder="Пиши сюда истину..."></textarea>
+
+    <button id="save-btn">Опубликовать истину</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
-        authDomain: "pover-mne-bratishka.firebaseapp.com",
-        projectId: "pover-mne-bratishka",
-        storageBucket: "pover-mne-bratishka.firebasestorage.app",
-        messagingSenderId: "633219407843",
-        appId: "1:633219407843:web:96b57b4d636091b3598ad6"
-    };
-
+    const firebaseConfig = { /* Тот же конфиг, что выше */ };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('id');
 
-    // Если редактируем, загружаем старые данные
+    // Если мы редактируем, подгружаем старые данные
     if (editId) {
-        const loadToEdit = async () => {
-            const docRef = doc(db, "articles", editId);
-            const snap = await getDoc(docRef);
-            if (snap.exists()) {
-                document.getElementById('title').value = snap.data().title;
-                document.getElementById('content').value = snap.data().content;
-                document.getElementById('image').value = snap.data().imageUrl || '';
-            }
-        };
-        loadToEdit();
+        const docRef = doc(db, "articles", editId);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+            document.getElementById('title').value = snap.data().title;
+            document.getElementById('content').value = snap.data().content;
+        }
     }
 
-    document.getElementById('saveBtn').onclick = async () => {
+    window.applyTemplate = () => {
+        const t = document.getElementById('template').value;
+        const c = document.getElementById('content');
+        if (t === 'biography') {
+            c.value = "<b>Дата рождения:</b> Неизвестно<br><b>Место:</b> Интернет<br><b>Суть:</b> ...";
+        } else if (t === 'scientific') {
+            c.value = "Согласно секретным исследованиям британских учёных... <br><i>[Вставить сомнительный график]</i>";
+        }
+    };
+
+    document.getElementById('save-btn').onclick = async () => {
         const title = document.getElementById('title').value;
         const content = document.getElementById('content').value;
-        const imageUrl = document.getElementById('image').value;
-
-        if (!title || !content) { return alert("Заполни поля, брат!"); }
+        const newId = editId || title.toLowerCase().replace(/\s+/g, '_'); // Генерируем ID из заголовка
 
         try {
-            if (editId) {
-                // Обновляем существующую
-                await setDoc(doc(db, "articles", editId), { title, content, imageUrl });
-                alert("Обновлено!");
-                window.location.href = `index.html?id=${editId}`;
-            } else {
-                // Создаем новую
-                const newDoc = await addDoc(collection(db, "articles"), { title, content, imageUrl });
-                alert("Опубликовано!");
-                window.location.href = `index.html?id=${newDoc.id}`;
-            }
+            await setDoc(doc(db, "articles", newId), {
+                title: title,
+                content: content,
+                timestamp: new Date()
+            });
+            alert("Опубликовано! Сейчас перебросим на страницу.");
+            window.location.href = `index.html?id=${newId}`;
         } catch (e) {
-            console.error(e);
-            alert("Ошибка! Firebase ругается.");
+            console.error("Ошибка, брат: ", e);
         }
     };
 </script>
