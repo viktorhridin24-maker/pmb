@@ -16,112 +16,211 @@
         /* Боковая панель */
         aside {
             width: 160px;
-            padding: 20px 10px;
-            font-size: 0.8em;
+            padding: 20px;
+            background: #f6f6f6;
+            border-right: 1px solid #a7d7f9;
+            height: 100vh;
+            position: sticky;
+            top: 0;
         }
+
         .logo {
-            width: 140px;
+            width: 100%;
             margin-bottom: 20px;
-            cursor: pointer;
         }
 
         /* Основной контент */
         main {
             flex-grow: 1;
-            background-color: white;
+            background: white;
             padding: 20px 40px;
             border-left: 1px solid #a7d7f9;
-            min-height: 100vh;
+        }
+
+        header {
+            border-bottom: 1px solid #a2a9b1;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 {
-            font-family: Georgia, serif;
-            border-bottom: 1px solid #a2a9b1;
-            font-weight: normal;
-            font-size: 2em;
+            font-size: 1.8em;
+            margin: 0;
         }
 
-        .auth-panel {
-            text-align: right;
-            font-size: 0.9em;
-            margin-bottom: 10px;
+        .auth-status {
+            font-size: 0.8em;
         }
 
-        .content-box {
+        .article-content {
             line-height: 1.6;
             font-size: 1.1em;
         }
 
-        .source {
-            margin-top: 40px;
-            padding: 10px;
+        .source-box {
             background: #f8f9fa;
             border: 1px solid #eaecf0;
+            padding: 10px;
+            margin-top: 40px;
             font-style: italic;
         }
 
-        /* Формы */
-        .editor-zone {
-            display: none; /* Скрыто для гостей */
-            margin-top: 20px;
-            border-top: 2px dashed #ccc;
+        /* Форма создания/редактирования */
+        #editor-section {
+            display: none;
+            margin-top: 30px;
+            border-top: 2px solid #3366cc;
             padding-top: 20px;
         }
+
         input, textarea {
             width: 100%;
             margin-bottom: 10px;
-            font-family: "Times New Roman";
             padding: 8px;
+            border: 1px solid #a2a9b1;
+            font-family: "Times New Roman", serif;
         }
+
         button {
+            background: #3366cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
             cursor: pointer;
-            padding: 5px 15px;
         }
+
+        button:hover {
+            background: #4477dd;
+        }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <aside>
-        <img src="pmb.png" alt="Logo" class="logo">
-        <nav>
-            <p><b>Навигация</b></p>
-            <ul style="list-style: none; padding: 0;">
-                <li><a href="#">Заглавная</a></li>
-                <li><a href="#">Случайная статья</a></li>
-            </ul>
-        </nav>
-    </aside>
+<aside>
+    <img src="pmb.jpg" alt="Logo" class="logo">
+    <nav>
+        <p><b>Навигация</b></p>
+        <ul style="list-style: none; padding: 0; font-size: 0.9em;">
+            <li><a href="#">Заглавная</a></li>
+            <li><a href="#">Случайная статья</a></li>
+            <li><a href="https://t.me/yourlink">Связаться с братом</a></li>
+        </ul>
+    </nav>
+</aside>
 
-    <main>
-        <div class="auth-panel">
-            <span id="user-status">Вы читаете как гость.</span>
-            <button id="login-btn">Войти</button>
+<main>
+    <header>
+        <h1 id="article-title">Загрузка истины...</h1>
+        <div class="auth-status" id="auth-info">
+            Вы вошли как: <b>Гость</b> | <a href="#" onclick="toggleLogin()">Эмулировать Вход</a>
         </div>
+    </header>
 
-        <h1 id="article-title">Загрузка...</h1>
-        
-        <div id="view-mode">
-            <div id="article-content" class="content-box">Выберите статью или создайте новую.</div>
-            <div class="source">Источник: <b>Поверь мне, брат</b></div>
+    <div id="display-section">
+        <div class="article-content" id="article-body">
+            Выберите статью или создайте новую, если вы ровный пацан.
         </div>
+        <div class="source-box">
+            <b>Источник:</b> Поверь мне, брат.
+        </div>
+    </div>
 
-        <div id="edit-mode" class="editor-zone">
-            <h3>Редактировать статью</h3>
-            <input type="text" id="edit-title" placeholder="Название статьи">
-            <textarea id="edit-text" rows="10" placeholder="Пиши правду здесь..."></textarea>
-            <button id="save-btn">Опубликовать</button>
-        </div>
-    </main>
+    <div id="editor-section">
+        <h3>Добавить новую правду в мир</h3>
+        <input type="text" id="new-title" placeholder="Заголовок статьи">
+        <textarea id="new-content" rows="10" placeholder="Текст статьи..."></textarea>
+        <button onclick="saveArticle()">Опубликовать (Брат отвечает)</button>
+    </div>
+
+    <hr style="margin-top: 50px;">
+    <div id="articles-list">
+        <h3>Список существующих истин:</h3>
+        <ul id="list-container"></ul>
+    </div>
+</main>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
-    authDomain: "pover-mne-bratishka.firebaseapp.com",
-    projectId: "pover-mne-bratishka",
-    storageBucket: "pover-mne-bratishka.firebasestorage.app",
-    messagingSenderId: "633219407843",
-    appId: "1:633219407843:web:96b57b4d636091b3598ad6",
-    measurementId:
+    const firebaseConfig = {
+        apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
+        authDomain: "pover-mne-bratishka.firebaseapp.com",
+        projectId: "pover-mne-bratishka",
+        storageBucket: "pover-mne-bratishka.firebasestorage.app",
+        messagingSenderId: "633219407843",
+        appId: "1:633219407843:web:96b57b4d636091b3598ad6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Состояние авторизации (для примера переключаем вручную)
+    window.isLoggedIn = false;
+
+    // Функция переключения входа (костыль для теста без Auth)
+    window.toggleLogin = () => {
+        window.isLoggedIn = !window.isLoggedIn;
+        document.getElementById('auth-info').innerHTML = window.isLoggedIn ? 
+            "Вы вошли как: <b>Братишка</b> | <a href='#' onclick='toggleLogin()'>Выйти</a>" : 
+            "Вы вошли как: <b>Гость</b> | <a href='#' onclick='toggleLogin()'>Эмулировать Вход</a>";
+        
+        document.getElementById('editor-section').style.display = window.isLoggedIn ? 'block' : 'none';
+    };
+
+    // Загрузка списка статей
+    async function loadArticles() {
+        const container = document.getElementById('list-container');
+        container.innerHTML = "Загрузка...";
+        
+        const q = query(collection(db, "articles"));
+        const querySnapshot = await getDocs(q);
+        
+        container.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            let li = document.createElement('li');
+            li.innerHTML = `<a href="#" style="color: #36b; text-decoration: none;">${data.title}</a>`;
+            li.onclick = () => {
+                document.getElementById('article-title').innerText = data.title;
+                document.getElementById('article-body').innerText = data.content;
+            };
+            container.appendChild(li);
+        });
+    }
+
+    // Сохранение статьи
+    window.saveArticle = async () => {
+        if (!window.isLoggedIn) {
+            alert("Ты кто такой? Зайди под аккаунтом, брат.");
+            return;
+        }
+
+        const title = document.getElementById('new-title').value;
+        const content = document.getElementById('new-content').value;
+
+        if (title && content) {
+            try {
+                await addDoc(collection(db, "articles"), {
+                    title: title,
+                    content: content,
+                    createdAt: new Date()
+                });
+                alert("Истина сохранена!");
+                location.reload();
+            } catch (e) {
+                console.error("Ошибка: ", e);
+            }
+        }
+    };
+
+    // Инициализация
+    loadArticles();
+</script>
+
+</body>
+</html>
