@@ -2,84 +2,75 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Создание страницы — Поверь мне брат</title>
+    <title>Конструктор — Поверь мне брат</title>
     <link rel="icon" href="pmbfanicon.png" type="image/png">
     <style>
-        body { font-family: "Times New Roman", serif; background: #f6f6f6; padding: 50px; }
-        .editor-container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border: 1px solid #a2a9b1; }
-        input, textarea, select { width: 100%; margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; font-family: inherit; }
-        button { background: #3366cc; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 16px; }
-        .preview-box { border: 1px dashed #ccc; padding: 10px; background: #fffbe6; font-size: 0.9em; margin-bottom: 20px; }
+        body { font-family: "Times New Roman", serif; background: #f0f2f5; padding: 40px; }
+        .editor-container { max-width: 800px; background: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: auto; }
+        input, textarea { width: 100%; margin-bottom: 15px; padding: 10px; border: 1px solid #a2a9b1; font-family: inherit; }
+        button { background: #36c; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        h2 { margin-top: 0; }
     </style>
 </head>
 <body>
 
 <div class="editor-container">
-    <h2>Редактор «Поверь мне брат»</h2>
-    <p>Выбери шаблон и заполни данные. Пруфы не нужны.</p>
-    
-    <label>Название статьи:</label>
-    <input type="text" id="title" placeholder="Напр: Почему небо синее">
-
-    <label>Шаблон оформления:</label>
-    <select id="template" onchange="applyTemplate()">
-        <option value="standard">Обычный текст</option>
-        <option value="biography">Биография мема</option>
-        <option value="scientific">«Научный» факт</option>
-    </select>
-
-    <label>Контент (поддерживает HTML):</label>
-    <textarea id="content" rows="10" placeholder="Пиши сюда истину..."></textarea>
-
-    <button id="save-btn">Опубликовать истину</button>
+    <h2 id="formTitle">Создать новую страницу</h2>
+    <input type="text" id="artTitle" placeholder="Заголовок статьи (например: Троллфейс)">
+    <input type="text" id="artImage" placeholder="Ссылка на URL картинки (необязательно)">
+    <textarea id="artText" rows="10" placeholder="Текст статьи..."></textarea>
+    <button id="saveBtn">Опубликовать (Источник: поверь мне брат)</button>
+    <p id="status"></p>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    const firebaseConfig = { /* Тот же конфиг, что выше */ };
+    const firebaseConfig = {
+        apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
+        authDomain: "pover-mne-bratishka.firebaseapp.com",
+        projectId: "pover-mne-bratishka",
+        storageBucket: "pover-mne-bratishka.firebasestorage.app",
+        messagingSenderId: "633219407843",
+        appId: "1:633219407843:web:96b57b4d636091b3598ad6"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get('id');
+    const editId = urlParams.get('edit');
 
-    // Если мы редактируем, подгружаем старые данные
     if (editId) {
+        document.getElementById('formTitle').innerText = "Редактирование статьи";
+        // Предзагрузка данных для редактирования
         const docRef = doc(db, "articles", editId);
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-            document.getElementById('title').value = snap.data().title;
-            document.getElementById('content').value = snap.data().content;
-        }
+        getDoc(docRef).then(snap => {
+            if(snap.exists()){
+                const d = snap.data();
+                document.getElementById('artTitle').value = d.title;
+                document.getElementById('artImage').value = d.imageUrl;
+                document.getElementById('artText').value = d.text;
+            }
+        });
     }
 
-    window.applyTemplate = () => {
-        const t = document.getElementById('template').value;
-        const c = document.getElementById('content');
-        if (t === 'biography') {
-            c.value = "<b>Дата рождения:</b> Неизвестно<br><b>Место:</b> Интернет<br><b>Суть:</b> ...";
-        } else if (t === 'scientific') {
-            c.value = "Согласно секретным исследованиям британских учёных... <br><i>[Вставить сомнительный график]</i>";
-        }
-    };
-
-    document.getElementById('save-btn').onclick = async () => {
-        const title = document.getElementById('title').value;
-        const content = document.getElementById('content').value;
-        const newId = editId || title.toLowerCase().replace(/\s+/g, '_'); // Генерируем ID из заголовка
+    document.getElementById('saveBtn').onclick = async () => {
+        const title = document.getElementById('artTitle').value;
+        const text = document.getElementById('artText').value;
+        const imageUrl = document.getElementById('artImage').value;
 
         try {
-            await setDoc(doc(db, "articles", newId), {
-                title: title,
-                content: content,
-                timestamp: new Date()
-            });
-            alert("Опубликовано! Сейчас перебросим на страницу.");
-            window.location.href = `index.html?id=${newId}`;
+            if (editId) {
+                await updateDoc(doc(db, "articles", editId), { title, text, imageUrl });
+                window.location.href = `index.html?id=${editId}`;
+            } else {
+                const docRef = await addDoc(collection(db, "articles"), { title, text, imageUrl });
+                window.location.href = `index.html?id=${docRef.id}`;
+            }
         } catch (e) {
-            console.error("Ошибка, брат: ", e);
+            document.getElementById('status').innerText = "Ошибка: " + e.message;
         }
     };
 </script>
