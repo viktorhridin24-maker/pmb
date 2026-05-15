@@ -4,64 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поверь мне брат — Свободная энциклопедия</title>
+    <link rel="icon" href="pmbfanicon.png" type="image/png">
     <style>
-        body { font-family: sans-serif; background: #f6f6f6; margin: 0; display: flex; }
-        
-        /* Боковая панель */
-        aside { width: 160px; padding: 20px; font-size: 13px; border-right: 1px solid #a7d7f9; }
-        aside img { width: 100%; margin-bottom: 20px; }
-        
-        /* Контент */
-        main { flex-grow: 1; padding: 20px 40px; background: white; min-height: 100vh; }
-        h1 { font-family: 'Linux Libertine', Georgia, serif; border-bottom: 1px solid #a2a9b1; padding-bottom: 5px; }
-        
-        .search-box { margin-bottom: 20px; }
-        input, textarea { width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #a2a9b1; box-sizing: border-box; }
-        button { background: #3366cc; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 2px; }
-        button:hover { background: #4477dd; }
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            display: flex;
+        }
 
-        #article-content { line-height: 1.6; }
-        .source-footer { margin-top: 40px; font-style: italic; color: #54595d; border-top: 1px solid #a2a9b1; padding-top: 10px; }
+        /* Боковая панель (Sidebar) */
+        #sidebar {
+            width: 160px;
+            padding: 20px;
+            background-color: #f6f6f6;
+            border-right: 1px solid #a7d7f9;
+            height: 100vh;
+            position: fixed;
+        }
+
+        #logo {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* Контентная область */
+        #content {
+            margin-left: 200px;
+            padding: 40px;
+            background: white;
+            min-height: 100vh;
+            flex-grow: 1;
+            border-left: 1px solid #a7d7f9;
+        }
+
+        h1 {
+            font-size: 2em;
+            border-bottom: 1px solid #a2a9b1;
+            padding-bottom: 5px;
+        }
+
+        .auth-box {
+            background: #f8f9fa;
+            border: 1px solid #a2a9b1;
+            padding: 15px;
+            margin-bottom: 20px;
+            width: fit-content;
+        }
+
+        input, textarea, button {
+            display: block;
+            margin: 10px 0;
+            font-family: "Times New Roman", serif;
+        }
+
+        button {
+            cursor: pointer;
+            background: #f8f9fa;
+            border: 1px solid #a2a9b1;
+            padding: 5px 15px;
+        }
+
+        button:hover { background: #eee; }
+
+        .article-card {
+            border-bottom: 1px solid #eaecf0;
+            padding: 10px 0;
+        }
+
+        .source {
+            font-style: italic;
+            color: #54595d;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
 
-<aside>
-    <img src="https://i.ibb.co/hR0W4hS/Gemini-Generated-Image-5ofgfb5ofgfb5ofg-removebg-preview.png" alt="Logo">
-    <p><a href="#" onclick="location.reload()">Заглавная</a></p>
-    <p>Случайная статья</p>
+<div id="sidebar">
+    <img src="pmb.jpg" id="logo" alt="Логотип">
+    <div id="user-info">
+        <small>Вы не вошли в систему</small>
+    </div>
+</div>
+
+<div id="content">
+    <h1>Поверь мне брат: Свободная энциклопедия</h1>
+
+    <div id="auth-section" class="auth-box">
+        <h3>Регистрация мемолога</h3>
+        <input type="email" id="email" placeholder="Электронная почта">
+        <input type="password" id="password" placeholder="Пароль">
+        <button id="btn-register">Создать аккаунт</button>
+    </div>
+
+    <div id="editor-section" style="display:none;">
+        <h3>Написать новую истину</h3>
+        <input type="text" id="art-title" placeholder="Заголовок статьи" style="width: 300px;">
+        <textarea id="art-text" placeholder="Текст статьи (поверь на слово...)" rows="5" style="width: 100%;"></textarea>
+        <button id="btn-save">Опубликовать</button>
+    </div>
+
     <hr>
-    <p><b>Источник:</b><br>Поверь мне брат</p>
-</aside>
-
-<main>
-    <div class="search-box">
-        <input type="text" id="search-input" placeholder="Поиск статьи (например: Мамонты)">
-        <button id="search-btn">Найти</button>
-        <button id="create-mode-btn" style="background:#444">Написать статью</button>
+    <h2>Последние правки</h2>
+    <div id="articles-list">
+        Загрузка истин...
     </div>
-
-    <div id="view-section">
-        <h1 id="title-display">Добро пожаловать в Поверь мне брат</h1>
-        <div id="article-content">
-            Здесь вы найдете только самую "проверенную" информацию. Просто введите название в поиске или создайте новую статью.
-        </div>
-        <div class="source-footer" id="footer-source" style="display:none">
-            Источник: <b>Поверь мне брат.</b>
-        </div>
-    </div>
-
-    <div id="edit-section" style="display:none">
-        <h1 id="edit-title-h">Создать новую статью</h1>
-        <input type="text" id="new-title" placeholder="Название статьи">
-        <textarea id="new-content" rows="10" placeholder="Текст статьи..."></textarea>
-        <button id="save-btn">Опубликовать (чесслово)</button>
-    </div>
-</main>
+</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD2XqlGh-fAp1skwkA9eOyx8Rl-EzcPp9Y",
@@ -69,53 +123,79 @@
     projectId: "pover-mne-bratishka",
     storageBucket: "pover-mne-bratishka.firebasestorage.app",
     messagingSenderId: "633219407843",
-    appId: "1:633219407843:web:96b57b4d636091b3598ad6"
+    appId: "1:633219407843:web:96b57b4d636091b3598ad6",
+    measurementId: "G-5SYBZ0EPPJ"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const articlesRef = collection(db, "articles");
+  const auth = getAuth(app);
 
-  // Переключение режимов
-  document.getElementById('create-mode-btn').onclick = () => {
-      document.getElementById('view-section').style.display = 'none';
-      document.getElementById('edit-section').style.display = 'block';
+  const authSection = document.getElementById('auth-section');
+  const editorSection = document.getElementById('editor-section');
+  const articlesList = document.getElementById('articles-list');
+
+  // --- Регистрация ---
+  document.getElementById('btn-register').onclick = async () => {
+      const email = document.getElementById('email').value;
+      const pass = document.getElementById('password').value;
+      try {
+          await createUserWithEmailAndPassword(auth, email, pass);
+          alert("Теперь ты в теме, брат!");
+      } catch (e) {
+          alert("Ошибка: " + e.message);
+      }
   };
 
-  // Сохранение статьи
-  document.getElementById('save-btn').onclick = async () => {
-      const title = document.getElementById('new-title').value;
-      const content = document.getElementById('new-content').value;
+  // --- Проверка состояния входа ---
+  onAuthStateChanged(auth, (user) => {
+      if (user) {
+          authSection.style.display = 'none';
+          editorSection.style.display = 'block';
+          document.getElementById('user-info').innerHTML = `Привет, <b>${user.email.split('@')[0]}</b>`;
+      }
+  });
 
-      if(title && content) {
-          await addDoc(articlesRef, { 
-              title: title.toLowerCase(), 
-              displayTitle: title,
-              content: content,
-              date: new Date() 
+  // --- Сохранение статьи ---
+  document.getElementById('btn-save').onclick = async () => {
+      const title = document.getElementById('art-title').value;
+      const text = document.getElementById('art-text').value;
+      
+      if(!title || !text) return alert("Заполни поля!");
+
+      try {
+          await addDoc(collection(db, "articles"), {
+              title: title,
+              content: text,
+              author: auth.currentUser.email,
+              timestamp: new Date()
           });
-          alert("Брат, сохранил! Теперь все поверят.");
-          location.reload();
+          location.reload(); // Перезагрузим для обновления списка
+      } catch (e) {
+          console.error(e);
       }
   };
 
-  // Поиск статьи
-  document.getElementById('search-btn').onclick = async () => {
-      const searchTerm = document.getElementById('search-input').value.toLowerCase();
-      const q = query(articlesRef, where("title", "==", searchTerm));
+  // --- Загрузка статей ---
+  async function loadArticles() {
+      articlesList.innerHTML = "";
+      const q = query(collection(db, "articles"), orderBy("timestamp", "desc"));
       const querySnapshot = await getDocs(q);
+      
+      querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const div = document.createElement('div');
+          div.className = 'article-card';
+          div.innerHTML = `
+              <h3>${data.title}</h3>
+              <p>${data.content}</p>
+              <div class="source">Источник: поверь мне брат (автор: ${data.author})</div>
+          `;
+          articlesList.appendChild(div);
+      });
+  }
 
-      if (!querySnapshot.empty) {
-          const data = querySnapshot.docs[0].data();
-          document.getElementById('title-display').innerText = data.displayTitle;
-          document.getElementById('article-content').innerText = data.content;
-          document.getElementById('footer-source').style.display = 'block';
-          document.getElementById('view-section').style.display = 'block';
-          document.getElementById('edit-section').style.display = 'none';
-      } else {
-          alert("Брат, такой статьи нет. Но ты можешь её создать!");
-      }
-  };
+  loadArticles();
 </script>
 
 </body>
